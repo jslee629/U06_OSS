@@ -17,10 +17,16 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
-	
+
+public:
+	void IncreaseActiveCount();
+	void DecreaseActiveCount();
+
 private:
-	UPROPERTY(EditAnywhere, Category = "MoveSpeed")
+	UPROPERTY(EditAnywhere, Category = "Moving")
 	float Speed;
+	UPROPERTY(EditAnywhere, Category = "Moving")
+	int32 ActiveCount;
 	UPROPERTY(EditAnywhere, Category = "TargetLocation", meta = (MakeEditWidget))
 	FVector TargetLS;
 

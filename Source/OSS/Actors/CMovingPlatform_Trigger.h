@@ -4,6 +4,9 @@
 #include "GameFramework/Actor.h"
 #include "CMovingPlatform_Trigger.generated.h"
 
+class UBoxComponent;
+class ACMovingPlatform;
+
 UCLASS()
 class OSS_API ACMovingPlatform_Trigger : public AActor
 {
@@ -15,7 +18,15 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-public:	
-	virtual void Tick(float DeltaTime) override;
+private:
+	UFUNCTION()
+	void OnBeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
+	UFUNCTION()
+	void OnEndOverlap(AActor* OverlappedActor, AActor* OtherActor);
 
+private:
+	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	UBoxComponent* BoxComp;
+	UPROPERTY(EditInstanceOnly, Category = "MovingPlatformList")
+	TArray<ACMovingPlatform*> PlatformsToTrigger;
 };

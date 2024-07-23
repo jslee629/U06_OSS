@@ -7,6 +7,7 @@ ACMovingPlatform::ACMovingPlatform()
 
 	//initialize variables
 	Speed = 100.f;
+	ActiveCount = 1;
 }
 
 void ACMovingPlatform::BeginPlay()
@@ -28,23 +29,40 @@ void ACMovingPlatform::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (HasAuthority())
+	if (ActiveCount > 0)
 	{
-		FVector CurrentLocation = GetActorLocation();
-
-		float TotalDistance = (StartWS - TargetWS).Size();
-		float CurrentDistance = (CurrentLocation - StartWS).Size();
-
-		if (CurrentDistance >= TotalDistance)
+		if (HasAuthority())
 		{
-			FVector Temp = StartWS;
-			StartWS = TargetWS;
-			TargetWS = Temp;
+			FVector CurrentLocation = GetActorLocation();
+
+			float TotalDistance = (StartWS - TargetWS).Size();
+			float CurrentDistance = (CurrentLocation - StartWS).Size();
+
+			if (CurrentDistance >= TotalDistance)
+			{
+				FVector Temp = StartWS;
+				StartWS = TargetWS;
+				TargetWS = Temp;
+			}
+
+			FVector Direction = (TargetWS - StartWS).GetSafeNormal();
+
+			CurrentLocation += Direction * Speed * DeltaTime;
+			SetActorLocation(CurrentLocation);
 		}
+	}
 
-		FVector Direction = (TargetWS - StartWS).GetSafeNormal();
+}
 
-		CurrentLocation += Direction * Speed * DeltaTime;
-		SetActorLocation(CurrentLocation);
+void ACMovingPlatform::IncreaseActiveCount()
+{
+	ActiveCount++;
+}
+
+void ACMovingPlatform::DecreaseActiveCount()
+{
+	if (ActiveCount > 0)
+	{
+		ActiveCount--;
 	}
 }
