@@ -1,6 +1,7 @@
 #include "CGameInstance.h"
-#include "../OSS.h"
 #include "Blueprint/UserWidget.h"
+#include "../OSS.h"
+#include "../UI/CMainMenuWidget.h"
 
 UCGameInstance::UCGameInstance()
 {
@@ -21,9 +22,17 @@ void UCGameInstance::Host()
 {
 	LogOnScreen(this, "Host", FColor::Green);
 
+	if (MainMenu)
+	{
+		MainMenu->SetInputToGame();
+	}
+
 	//ServerTravel
 	UWorld* World = GetWorld();
-	if (!World) return;
+	if (!World)
+	{
+		return;
+	}
 
 	World->ServerTravel("/Game/Maps/CoOp?listen");
 }
@@ -32,32 +41,29 @@ void UCGameInstance::Join(const FString& InAddress)
 {
 	LogOnScreen(this, "Join to " + InAddress, FColor::Green);
 
+	if (MainMenu)
+	{
+		MainMenu->SetInputToGame();
+	}
+
 	//ClientTravel
 	APlayerController* PC = GetFirstLocalPlayerController();
-	if (!PC) return;
+	if (!PC)
+	{
+		return;
+	}
 
 	PC->ClientTravel(InAddress, ETravelType::TRAVEL_Absolute);
 }
 
 void UCGameInstance::LoadMainMenu()
 {
-	UUserWidget* MainMenu = CreateWidget<UUserWidget>(this, MainMenuWidgetClass);
+	MainMenu = CreateWidget<UCMainMenuWidget>(this, MainMenuWidgetClass);
 	if (!MainMenu)
 	{
 		return;
 	}
 
-	MainMenu->AddToViewport();
-
-	APlayerController* PC = GetFirstLocalPlayerController();
-	if (!PC)
-	{
-		FInputModeUIOnly InputMode;
-		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-
-		PC->bShowMouseCursor = true;
-		PC->SetInputMode(InputMode);
-	}
-
-
+	MainMenu->SetOwningInstance(this);
+	MainMenu->SetInputToUI();
 }
