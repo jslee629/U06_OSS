@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "CMenuWidgetBase.h"
 #include "../Game/CMenuInterface.h"
 #include "CMainMenuWidget.generated.h"
 
@@ -10,17 +10,12 @@ class UWidgetSwitcher;
 class UEditableTextBox;
 
 UCLASS()
-class OSS_API UCMainMenuWidget : public UUserWidget
+class OSS_API UCMainMenuWidget : public UCMenuWidgetBase
 {
 	GENERATED_BODY()
 
 protected:
 	virtual bool Initialize() override;
-
-public:
-	void SetOwningInstance(ICMenuInterface* InOwningInstance);
-	void SetInputToUI();
-	void SetInputToGame();
 
 private:
 	UFUNCTION()
@@ -31,6 +26,8 @@ private:
 	void SwitchMainMenu();
 	UFUNCTION()
 	void JoinServer();
+	UFUNCTION()
+	void QuitPressed();
 
 protected:
 	//Buttons
@@ -42,6 +39,8 @@ protected:
 	UButton* CancelButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* JoinServerButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* QuitButton;
 
 	//Widgets
 	UPROPERTY(meta = (BindWidget))
@@ -52,7 +51,4 @@ protected:
 	UWidget* JoinMenu;
 	UPROPERTY(meta = (BindWidget))
 	UEditableTextBox* IPAddressField;
-
-private:
-	ICMenuInterface* OwningInstance;
 };
