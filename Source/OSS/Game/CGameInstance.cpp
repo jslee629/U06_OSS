@@ -5,6 +5,8 @@
 #include "../OSS.h"
 #include "../UI/CMainMenuWidget.h"
 
+const static FName SESSION_NAME = TEXT("GameSession");
+
 UCGameInstance::UCGameInstance()
 {
 	ConstructorHelpers::FClassFinder<UUserWidget> MainMenuWidgetClassAsset(TEXT("/Game/UI/WB_MainMenu"));
@@ -37,6 +39,8 @@ void UCGameInstance::Init()
 			UE_LOG(LogTemp, Display, TEXT("Session Interface is found"));
 
 			SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UCGameInstance::OnCreateSessionCompleted);
+			SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UCGameInstance::OnDestroySessionCompleted);
+			SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UCGameInstance::OnFindSessionsCompleted);
 		}
 	}
 	else
@@ -49,8 +53,28 @@ void UCGameInstance::Host()
 {
 	if (SessionInterface.IsValid())
 	{
+		auto ExistingSession = SessionInterface->GetNamedSession(SESSION_NAME);
+
+		if (ExistingSession)
+		{
+			SessionInterface->DestroySession(SESSION_NAME);
+		}
+		else
+		{
+			CreateSession_Internal();
+		}
+	}
+}
+
+void UCGameInstance::CreateSession_Internal()
+{
+	if (SessionInterface.IsValid())
+	{
 		FOnlineSessionSettings SessionSettings;
-		SessionInterface->CreateSession(0, TEXT("MySession"), SessionSettings);
+		SessionSettings.bIsLANMatch = true;		// 같은 사설망 안에 있는 클라이언트만
+		SessionSettings.NumPublicConnections = 2;	// 세션 안에 접근하여 들어올 수 있는 사람 수
+		SessionSettings.bShouldAdvertise = true;	// 세션 검색이 되도록 하느냐 안 되도록 하느냐
+		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 	}
 }
 
@@ -91,6 +115,17 @@ void UCGameInstance::OpenMainMenuLevel()
 	PC->ClientTravel("/Game/Maps/MainMenu", ETravelType::TRAVEL_Absolute);
 }
 
+void UCGameInstance::StartFindSession()
+{
+	SessionSearch = MakeShareable(new FOnlineSessionSearch());
+	if (SessionSearch.IsValid())
+	{
+		LogOnScreen(this, "Start Finding Session");
+		SessionSearch->bIsLanQuery = true;
+		SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
+	}
+}
+
 void UCGameInstance::LoadMainMenu()
 {
 	ensure(MainMenuWidgetClass);
@@ -121,6 +156,8 @@ void UCGameInstance::LoadInGameMenu()
 
 void UCGameInstance::OnCreateSessionCompleted(FName InSessionName, bool bWasSuccessful)
 {
+	UE_LOG(LogTemp, Error, TEXT("Created Session"));
+
 	if (!bWasSuccessful)
 	{
 		LogOnScreen(this, "Could not create session!", FColor::Red);
@@ -142,4 +179,34 @@ void UCGameInstance::OnCreateSessionCompleted(FName InSessionName, bool bWasSucc
 	}
 
 	World->ServerTravel("/Game/Maps/CoOp?listen");
+}
+
+void UCGameInstance::OnDestroySessionCompleted(FName InSessionName, bool bWasSuccessful)
+{
+	UE_LOG(LogTemp, Error, TEXT("Destroied Session"));
+
+	if (bWasSuccessful)
+	{
+		CreateSession_Internal();
+	}
+}
+
+void UCGameInstance::OnFindSessionsCompleted(bool bWasSuccessful)
+{
+	if (bWasSuccessful && SessionSearch.IsValid() && MainMenu)
+	{
+		LogOnScreen(this, "Finish Finding Session");
+
+		TArray<FString> SessionList;
+
+		for (const auto& SearchResult : SessionSearch->SearchResults)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Found Session ID : %s"), *SearchResult.GetSessionIdStr());
+			UE_LOG(LogTemp, Error, TEXT("Ping(ms) : %d"), SearchResult.PingInMs);
+
+			SessionList.Add(SearchResult.GetSessionIdStr());
+		}
+
+		MainMenu->SetSessionList(SessionList);
+	}
 }

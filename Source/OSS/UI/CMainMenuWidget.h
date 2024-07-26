@@ -7,12 +7,15 @@
 
 class UButton;
 class UWidgetSwitcher;
-class UEditableTextBox;
+class UPanelWidget;
 
 UCLASS()
 class OSS_API UCMainMenuWidget : public UCMenuWidgetBase
 {
 	GENERATED_BODY()
+
+public:
+	UCMainMenuWidget();
 
 protected:
 	virtual bool Initialize() override;
@@ -28,6 +31,10 @@ private:
 	void JoinServer();
 	UFUNCTION()
 	void QuitPressed();
+
+public:
+	void SetSessionList(TArray<FString> InSessionNames);
+	void SetSelectedIndex(uint32 InIndex);
 
 protected:
 	//Buttons
@@ -50,5 +57,9 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UWidget* JoinMenu;
 	UPROPERTY(meta = (BindWidget))
-	UEditableTextBox* IPAddressField;
+	UPanelWidget* SessionList;
+
+private:
+	TSubclassOf<UUserWidget> SessionRowClass;
+	TOptional<uint32> SelectedIndex;
 };
