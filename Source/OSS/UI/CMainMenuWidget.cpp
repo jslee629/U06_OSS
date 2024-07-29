@@ -79,19 +79,15 @@ void UCMainMenuWidget::SwitchMainMenu()
 
 void UCMainMenuWidget::JoinServer()
 {
-	if (SelectedIndex.IsSet())
+	if (SelectedIndex.IsSet() && OwningInstance)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("SelectedIndex : %d"), SelectedIndex.GetValue());
+		OwningInstance->Join(SelectedIndex.GetValue());
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("SelectedIndex is not Set yet"));
 	}
-
-	ensure(OwningInstance);
-	//OwningInstance->Join("");
-
-
 }
 
 void UCMainMenuWidget::QuitPressed()
@@ -107,18 +103,20 @@ void UCMainMenuWidget::QuitPressed()
 	PC->ConsoleCommand("Quit");
 }
 
-void UCMainMenuWidget::SetSessionList(TArray<FString> InSessionNames)
+void UCMainMenuWidget::SetSessionList(TArray<FSessionData> InSessionDatas)
 {
 	SessionList->ClearChildren();
 
 	uint32 i = 0;
 
-	for (const auto& SessionName : InSessionNames)
+	for (const auto& SessionData : InSessionDatas)
 	{
 		UCSessionRowWidget* SessionRow = CreateWidget<UCSessionRowWidget>(this, SessionRowClass);
 		if (SessionRow)
 		{
-			SessionRow->SessionName->SetText(FText::FromString(SessionName));
+			SessionRow->SessionName->SetText(FText::FromString(SessionData.Name));
+			SessionRow->HostName->SetText(FText::FromString(SessionData.HostUserName));
+			SessionRow->PlayerNumber->SetText(FText::FromString(SessionData.CurPlayers + "/" + SessionData.MaxPlayers));
 			SessionRow->Setup(this, i++);
 			SessionList->AddChild(SessionRow);
 		}
@@ -128,4 +126,16 @@ void UCMainMenuWidget::SetSessionList(TArray<FString> InSessionNames)
 void UCMainMenuWidget::SetSelectedIndex(uint32 InIndex)
 {
 	SelectedIndex = InIndex;
+
+	int32 SessionCount = SessionList->GetChildrenCount();
+	
+	for (int i = 0; i < SessionCount; i++)
+	{
+		UCSessionRowWidget* SessionRow= Cast<UCSessionRowWidget>(SessionList->GetChildAt(i));
+		if (SessionRow)
+		{
+			SessionRow->bEverClicked = (SelectedIndex.IsSet() && SelectedIndex.GetValue() == i);
+		}
+		
+	}
 }

@@ -2,8 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
-#include "OnlineSubsystem.h"
 #include "CMenuInterface.h"
+#include "OnlineSubsystem.h"
+#include "Interfaces/OnlineSessionInterface.h"
 #include "CGameInstance.generated.h"
 
 class UUserWidget;
@@ -23,7 +24,7 @@ public:
 	UFUNCTION(Exec)
 	virtual void Host() override;
 	UFUNCTION(Exec)
-	virtual void Join(const FString& InAddress) override;
+	virtual void Join(uint32 InIndex) override;
 
 	virtual void OpenMainMenuLevel() override;
 	virtual void StartFindSession() override;
@@ -41,6 +42,7 @@ private:
 	void OnCreateSessionCompleted(FName InSessionName, bool bWasSuccessful);
 	void OnDestroySessionCompleted(FName InSessionName, bool bWasSuccessful);
 	void OnFindSessionsCompleted(bool bWasSuccessful);
+	void OnJoinSessionCompleted(FName InSessionName, EOnJoinSessionCompleteResult::Type OutResult);
 
 private:
 	TSubclassOf<UUserWidget> MainMenuWidgetClass;

@@ -32,6 +32,10 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	UButton* RowButton;
 
+public:
+	UPROPERTY(BlueprintReadOnly)
+	bool bEverClicked;
+
 private:
 	UCMainMenuWidget* ParentWidget;
 	uint32 SelfIndex;

@@ -1,5 +1,4 @@
 #include "CGameInstance.h"
-#include "Interfaces/OnlineSessionInterface.h"
 #include "OnlineSessionSettings.h"
 #include "Blueprint/UserWidget.h"
 #include "../OSS.h"
@@ -41,6 +40,7 @@ void UCGameInstance::Init()
 			SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UCGameInstance::OnCreateSessionCompleted);
 			SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UCGameInstance::OnDestroySessionCompleted);
 			SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UCGameInstance::OnFindSessionsCompleted);
+			SessionInterface->OnJoinSessionCompleteDelegates.AddUObject(this, &UCGameInstance::OnJoinSessionCompleted);
 		}
 	}
 	else
@@ -71,36 +71,37 @@ void UCGameInstance::CreateSession_Internal()
 	if (SessionInterface.IsValid())
 	{
 		FOnlineSessionSettings SessionSettings;
-		SessionSettings.bIsLANMatch = true;		// 같은 사설망 안에 있는 클라이언트만
+
+		if (IOnlineSubsystem::Get()->GetSubsystemName() == "NULL")
+		{
+			SessionSettings.bIsLANMatch = true;			// 같은 사설망 안에 있는 클라이언트만
+		}
+		else
+		{
+			SessionSettings.bIsLANMatch = false;		// 인터넷을 향해
+		}
+
 		SessionSettings.NumPublicConnections = 2;	// 세션 안에 접근하여 들어올 수 있는 사람 수
 		SessionSettings.bShouldAdvertise = true;	// 세션 검색이 되도록 하느냐 안 되도록 하느냐
+		SessionSettings.bUsesPresence = true;		// Steam을 사용할 때: true면 CreateLobbySession, false면 CreateInternetSession
+
 		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 	}
 }
 
-void UCGameInstance::Join(const FString& InAddress)
+void UCGameInstance::Join(uint32 InIndex)
 {
-	if (InAddress == "")
+	if (!SessionInterface.IsValid() || !SessionSearch.IsValid())
 	{
-		LogOnScreen(this, "Enter the correct IP" + InAddress, FColor::Green);
 		return;
 	}
-
-	LogOnScreen(this, "Join to " + InAddress, FColor::Green);
 
 	if (MainMenu)
 	{
 		MainMenu->SetInputToGame();
 	}
 
-	//ClientTravel
-	APlayerController* PC = GetFirstLocalPlayerController();
-	if (!PC)
-	{
-		return;
-	}
-
-	PC->ClientTravel(InAddress, ETravelType::TRAVEL_Absolute);
+	SessionInterface->JoinSession(0, SESSION_NAME, SessionSearch->SearchResults[InIndex]);
 }
 
 void UCGameInstance::OpenMainMenuLevel()
@@ -121,7 +122,10 @@ void UCGameInstance::StartFindSession()
 	if (SessionSearch.IsValid())
 	{
 		LogOnScreen(this, "Start Finding Session");
-		SessionSearch->bIsLanQuery = true;
+
+		SessionSearch->MaxSearchResults = 100;
+		SessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
+
 		SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
 	}
 }
@@ -197,16 +201,44 @@ void UCGameInstance::OnFindSessionsCompleted(bool bWasSuccessful)
 	{
 		LogOnScreen(this, "Finish Finding Session");
 
-		TArray<FString> SessionList;
+		TArray<FSessionData> SessionList;
 
 		for (const auto& SearchResult : SessionSearch->SearchResults)
 		{
 			UE_LOG(LogTemp, Error, TEXT("Found Session ID : %s"), *SearchResult.GetSessionIdStr());
 			UE_LOG(LogTemp, Error, TEXT("Ping(ms) : %d"), SearchResult.PingInMs);
 
-			SessionList.Add(SearchResult.GetSessionIdStr());
+			FSessionData Data;
+			Data.Name = SearchResult.GetSessionIdStr();
+			Data.MaxPlayers = SearchResult.Session.SessionSettings.NumPublicConnections;
+			Data.CurPlayers = Data.MaxPlayers - SearchResult.Session.NumOpenPublicConnections;
+			Data.HostUserName = SearchResult.Session.OwningUserName;
+
+			SessionList.Add(Data);
 		}
 
 		MainMenu->SetSessionList(SessionList);
 	}
+}
+
+void UCGameInstance::OnJoinSessionCompleted(FName InSessionName, EOnJoinSessionCompleteResult::Type OutResult)
+{
+	//Get the Address from Session Name
+	FString Address;
+	if (SessionInterface->GetResolvedConnectString(InSessionName, Address) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Could Not Resolve to IP Address"));
+		return;
+	}
+
+	LogOnScreen(this, "Join to " + Address, FColor::Green);
+
+	//ClientTravel
+	APlayerController* PC = GetFirstLocalPlayerController();
+	if (!PC)
+	{
+		return;
+	}
+
+	PC->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
 }
