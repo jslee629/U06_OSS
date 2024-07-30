@@ -22,7 +22,7 @@ public:
 
 public:
 	UFUNCTION(Exec)
-	virtual void Host() override;
+	virtual void Host(FString InDesiredSessionName) override;
 	UFUNCTION(Exec)
 	virtual void Join(uint32 InIndex) override;
 
@@ -50,4 +50,5 @@ private:
 	TSubclassOf<UUserWidget> InGameMenuWidgetClass;
 	IOnlineSessionPtr SessionInterface;
 	TSharedPtr<FOnlineSessionSearch> SessionSearch;
+	FString DesiredSessionName;
 };

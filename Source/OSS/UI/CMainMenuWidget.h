@@ -8,6 +8,7 @@
 class UButton;
 class UWidgetSwitcher;
 class UPanelWidget;
+class UEditableTextBox;
 
 USTRUCT(BlueprintType)
 struct FSessionData
@@ -43,6 +44,8 @@ private:
 	void JoinServer();
 	UFUNCTION()
 	void QuitPressed();
+	UFUNCTION()
+	void SwitchHostMenu();
 
 public:
 	void SetSessionList(TArray<FSessionData> InSessionDatas);
@@ -55,11 +58,15 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UButton* JoinButton;
 	UPROPERTY(meta = (BindWidget))
-	UButton* CancelButton;
+	UButton* CancelJoinButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* JoinServerButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* QuitButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* CancelHostButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* HostServerButton;
 
 	//Widgets
 	UPROPERTY(meta = (BindWidget))
@@ -69,7 +76,11 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UWidget* JoinMenu;
 	UPROPERTY(meta = (BindWidget))
+	UWidget* HostMenu;
+	UPROPERTY(meta = (BindWidget))
 	UPanelWidget* SessionList;
+	UPROPERTY(meta = (BindWidget))
+	UEditableTextBox* DesiredSessionName;
 
 private:
 	TSubclassOf<UUserWidget> SessionRowClass;

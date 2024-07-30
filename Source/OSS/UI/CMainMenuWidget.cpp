@@ -3,6 +3,7 @@
 #include "Components/WidgetSwitcher.h"
 #include "Components/PanelWidget.h"
 #include "Components/TextBlock.h"
+#include "Components/EditableTextBox.h"
 #include "CSessionRowWidget.h"
 
 UCMainMenuWidget::UCMainMenuWidget()
@@ -25,7 +26,7 @@ bool UCMainMenuWidget::Initialize()
 
 	if (HostButton)
 	{
-		HostButton->OnClicked.AddDynamic(this, &UCMainMenuWidget::HostServer);
+		HostButton->OnClicked.AddDynamic(this, &UCMainMenuWidget::SwitchHostMenu);
 	}
 
 	if (JoinButton)
@@ -33,14 +34,24 @@ bool UCMainMenuWidget::Initialize()
 		JoinButton->OnClicked.AddDynamic(this, &UCMainMenuWidget::SwitchJoinMenu);
 	}
 
-	if (CancelButton)
+	if (CancelJoinButton)
 	{
-		CancelButton->OnClicked.AddDynamic(this, &UCMainMenuWidget::SwitchMainMenu);
+		CancelJoinButton->OnClicked.AddDynamic(this, &UCMainMenuWidget::SwitchMainMenu);
 	}
 
 	if (JoinServerButton)
 	{
 		JoinServerButton->OnClicked.AddDynamic(this, &UCMainMenuWidget::JoinServer);
+	}
+
+	if (CancelHostButton)
+	{
+		CancelHostButton->OnClicked.AddDynamic(this, &UCMainMenuWidget::SwitchMainMenu);
+	}
+
+	if (HostServerButton)
+	{
+		HostServerButton->OnClicked.AddDynamic(this, &UCMainMenuWidget::HostServer);
 	}
 
 	if (QuitButton)
@@ -54,7 +65,7 @@ void UCMainMenuWidget::HostServer()
 {
 	ensure(OwningInstance);
 
-	OwningInstance->Host();
+	OwningInstance->Host(DesiredSessionName->GetText().ToString());
 }
 
 void UCMainMenuWidget::SwitchJoinMenu()
@@ -103,6 +114,14 @@ void UCMainMenuWidget::QuitPressed()
 	PC->ConsoleCommand("Quit");
 }
 
+void UCMainMenuWidget::SwitchHostMenu()
+{
+	ensure(MenuSwitcher);
+	ensure(MainMenu);
+
+	MenuSwitcher->SetActiveWidget(HostMenu);
+}
+
 void UCMainMenuWidget::SetSessionList(TArray<FSessionData> InSessionDatas)
 {
 	SessionList->ClearChildren();
@@ -116,7 +135,8 @@ void UCMainMenuWidget::SetSessionList(TArray<FSessionData> InSessionDatas)
 		{
 			SessionRow->SessionName->SetText(FText::FromString(SessionData.Name));
 			SessionRow->HostName->SetText(FText::FromString(SessionData.HostUserName));
-			SessionRow->PlayerNumber->SetText(FText::FromString(SessionData.CurPlayers + "/" + SessionData.MaxPlayers));
+			FString FractionStr = FString::Printf(TEXT("%d/%d"), SessionData.CurPlayers, SessionData.MaxPlayers);
+			SessionRow->PlayerNumber->SetText(FText::FromString(FractionStr));
 			SessionRow->Setup(this, i++);
 			SessionList->AddChild(SessionRow);
 		}

@@ -4,7 +4,8 @@
 #include "../OSS.h"
 #include "../UI/CMainMenuWidget.h"
 
-const static FName SESSION_NAME = TEXT("GameSession");
+const static FName SESSION_NAME = TEXT("GameSession");			// UE4의 버그: SessionName은 무조건 "GameSession"을 넣어줘야 한다
+const static FName SESSION_SETTINGS_KEY = TEXT("ToreKey");
 
 UCGameInstance::UCGameInstance()
 {
@@ -49,8 +50,10 @@ void UCGameInstance::Init()
 	}
 }
 
-void UCGameInstance::Host()
+void UCGameInstance::Host(FString InDesiredSessionName)
 {
+	DesiredSessionName = InDesiredSessionName;
+
 	if (SessionInterface.IsValid())
 	{
 		auto ExistingSession = SessionInterface->GetNamedSession(SESSION_NAME);
@@ -81,9 +84,15 @@ void UCGameInstance::CreateSession_Internal()
 			SessionSettings.bIsLANMatch = false;		// 인터넷을 향해
 		}
 
-		SessionSettings.NumPublicConnections = 2;	// 세션 안에 접근하여 들어올 수 있는 사람 수
-		SessionSettings.bShouldAdvertise = true;	// 세션 검색이 되도록 하느냐 안 되도록 하느냐
-		SessionSettings.bUsesPresence = true;		// Steam을 사용할 때: true면 CreateLobbySession, false면 CreateInternetSession
+		SessionSettings.NumPublicConnections = 5;		// 세션 안에 접근하여 들어올 수 있는 사람 수
+		SessionSettings.bShouldAdvertise = true;		// 세션 검색이 되도록 하느냐 안 되도록 하느냐
+		SessionSettings.bUsesPresence = true;			// Steam을 사용할 때: true면 CreateLobbySession, false면 CreateInternetSession
+		SessionSettings.Set								// 세션에 접근할 key와 Value를 저장 -> Value에 세션 이름이 들어갈 예정
+		(
+			SESSION_SETTINGS_KEY, 
+			DesiredSessionName, 
+			EOnlineDataAdvertisementType::Type::ViaOnlineServiceAndPing
+		);
 
 		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 	}
@@ -182,7 +191,7 @@ void UCGameInstance::OnCreateSessionCompleted(FName InSessionName, bool bWasSucc
 		return;
 	}
 
-	World->ServerTravel("/Game/Maps/CoOp?listen");
+	World->ServerTravel("/Game/Maps/Lobby?listen");
 }
 
 void UCGameInstance::OnDestroySessionCompleted(FName InSessionName, bool bWasSuccessful)
@@ -209,10 +218,19 @@ void UCGameInstance::OnFindSessionsCompleted(bool bWasSuccessful)
 			UE_LOG(LogTemp, Error, TEXT("Ping(ms) : %d"), SearchResult.PingInMs);
 
 			FSessionData Data;
-			Data.Name = SearchResult.GetSessionIdStr();
 			Data.MaxPlayers = SearchResult.Session.SessionSettings.NumPublicConnections;
 			Data.CurPlayers = Data.MaxPlayers - SearchResult.Session.NumOpenPublicConnections;
 			Data.HostUserName = SearchResult.Session.OwningUserName;
+			
+			FString SessionName;
+			if (SearchResult.Session.SessionSettings.Get(SESSION_SETTINGS_KEY, SessionName))
+			{
+				Data.Name = SessionName;
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("SessionSettings Key is not Valid"));
+			}
 
 			SessionList.Add(Data);
 		}
