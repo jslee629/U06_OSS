@@ -29,6 +29,8 @@ public:
 	virtual void OpenMainMenuLevel() override;
 	virtual void StartFindSession() override;
 
+	void StartSession();
+
 private:	
 	void CreateSession_Internal();
 
@@ -43,6 +45,7 @@ private:
 	void OnDestroySessionCompleted(FName InSessionName, bool bWasSuccessful);
 	void OnFindSessionsCompleted(bool bWasSuccessful);
 	void OnJoinSessionCompleted(FName InSessionName, EOnJoinSessionCompleteResult::Type OutResult);
+	void OnNetworkFailure(UWorld* World, UNetDriver* NetDrive, ENetworkFailure::Type FailureType, const FString& ErrorMessage);
 
 private:
 	TSubclassOf<UUserWidget> MainMenuWidgetClass;

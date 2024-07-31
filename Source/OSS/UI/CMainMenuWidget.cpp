@@ -78,6 +78,7 @@ void UCMainMenuWidget::SwitchJoinMenu()
 
 	MenuSwitcher->SetActiveWidget(JoinMenu);
 
+	SessionList->ClearChildren();
 }
 
 void UCMainMenuWidget::SwitchMainMenu()
@@ -124,8 +125,6 @@ void UCMainMenuWidget::SwitchHostMenu()
 
 void UCMainMenuWidget::SetSessionList(TArray<FSessionData> InSessionDatas)
 {
-	SessionList->ClearChildren();
-
 	uint32 i = 0;
 
 	for (const auto& SessionData : InSessionDatas)
