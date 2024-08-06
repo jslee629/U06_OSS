@@ -21,12 +21,14 @@ protected:
 private:
 	UFUNCTION()
 	void OnBeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
+
 	UFUNCTION()
 	void OnEndOverlap(AActor* OverlappedActor, AActor* OtherActor);
 
 private:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UBoxComponent* BoxComp;
-	UPROPERTY(EditInstanceOnly, Category = "MovingPlatformList")
+
+	UPROPERTY(EditInstanceOnly, Category = "MovingPlatform")
 	TArray<ACMovingPlatform*> PlatformsToTrigger;
 };

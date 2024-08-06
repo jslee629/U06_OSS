@@ -10,17 +10,16 @@ void ACLobbyGameMode::PostLogin(APlayerController* NewPlayer)
 	++NumberOfPlayers;
 
 	LogOnScreen(this, "Current Players : " + FString::FromInt(NumberOfPlayers));
-	UE_LOG(LogTemp, Warning, TEXT("PostLogin -> Current Players : %s"), *(FString::FromInt(NumberOfPlayers)));
+	UE_LOG(LogTemp, Warning, TEXT("PostLogin : Current Players : %s"), *FString::FromInt(NumberOfPlayers));
 
 	if (NumberOfPlayers >= 3)
 	{
 		LogOnScreen(this, "Reached 3 Players");
 		UE_LOG(LogTemp, Error, TEXT("Reached 3 Players"));
 
-		GetWorldTimerManager().SetTimer(GameStartTimer, this, &ACLobbyGameMode::StartGame, 5.f);
+		GetWorldTimerManager().SetTimer(GamerStartTimer, this, &ACLobbyGameMode::StartGame, 5.f);
 	}
 }
-
 
 void ACLobbyGameMode::Logout(AController* Exiting)
 {
@@ -28,12 +27,12 @@ void ACLobbyGameMode::Logout(AController* Exiting)
 
 	--NumberOfPlayers;
 
-	UE_LOG(LogTemp, Warning, TEXT("Logout -> Current Players : %s"), *(FString::FromInt(NumberOfPlayers)));
+	UE_LOG(LogTemp, Warning, TEXT("Logout : Current Players : %s"), *FString::FromInt(NumberOfPlayers));
 }
 
 void ACLobbyGameMode::StartGame()
 {
-	UCGameInstance* GameInstance = Cast<UCGameInstance>(GetGameInstance());
+	UCGameInstance* GameInstance =  Cast<UCGameInstance>(GetGameInstance());
 	if (GameInstance)
 	{
 		GameInstance->StartSession();
@@ -42,7 +41,7 @@ void ACLobbyGameMode::StartGame()
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		//bUseSeamlessTravel = true;
-		World->ServerTravel("/Game/Maps/CoOp?listen");
+		bUseSeamlessTravel = true;
+		World->ServerTravel("/Game/Maps/FPS?listen");
 	}
 }

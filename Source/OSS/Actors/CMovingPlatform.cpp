@@ -4,8 +4,7 @@ ACMovingPlatform::ACMovingPlatform()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	SetMobility(EComponentMobility::Movable);
-
-	//initialize variables
+	
 	Speed = 100.f;
 	ActiveCount = 1;
 }
@@ -20,7 +19,6 @@ void ACMovingPlatform::BeginPlay()
 		SetReplicateMovement(true);
 	}
 
-	//set two points to come and go
 	StartWS = GetActorLocation();
 	TargetWS = GetTransform().TransformPosition(TargetLS);
 }
@@ -51,7 +49,6 @@ void ACMovingPlatform::Tick(float DeltaTime)
 			SetActorLocation(CurrentLocation);
 		}
 	}
-
 }
 
 void ACMovingPlatform::IncreaseActiveCount()

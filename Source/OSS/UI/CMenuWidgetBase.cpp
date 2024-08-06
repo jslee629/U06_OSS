@@ -40,7 +40,6 @@ void UCMenuWidgetBase::SetInputToGame()
 	if (PC)
 	{
 		FInputModeGameOnly InputMode;
-
 		PC->SetInputMode(InputMode);
 		PC->bShowMouseCursor = false;
 	}

@@ -1,20 +1,24 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "FPSHUD.h"
 #include "Engine/Canvas.h"
 #include "TextureResource.h"
 #include "CanvasItem.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/Texture2D.h"
+#include "../UI/CPlayerStatusWidget.h"
 
 AFPSHUD::AFPSHUD()
 {
 	// Set the crosshair texture
 	static ConstructorHelpers::FObjectFinder<UTexture2D> CrosshairTexObj(TEXT("/Game/FirstPerson/Textures/FirstPersonCrosshair"));
 	CrosshairTex = CrosshairTexObj.Object;
+
+	ConstructorHelpers::FClassFinder<UCPlayerStatusWidget> WidgetClass(TEXT("/Game/UI/WB_PlayerStatus"));
+	if (WidgetClass.Succeeded())
+	{
+		PlayerStatusWidgetClass = WidgetClass.Class;
+	}
 }
 
-/** This method draws a very simple crosshair */
 void AFPSHUD::DrawHUD()
 {
 	Super::DrawHUD();
@@ -30,4 +34,16 @@ void AFPSHUD::DrawHUD()
 	FCanvasTileItem TileItem( CrosshairDrawPosition, CrosshairTex->Resource, FLinearColor::White);
 	TileItem.BlendMode = SE_BLEND_Translucent;
 	Canvas->DrawItem( TileItem );
+}
+
+void AFPSHUD::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (ensure(PlayerStatusWidgetClass))
+	{
+		PlayerStatusWidget = CreateWidget<UCPlayerStatusWidget>(GetWorld(), PlayerStatusWidgetClass);
+		PlayerStatusWidget->AddToViewport();
+	}
+
 }

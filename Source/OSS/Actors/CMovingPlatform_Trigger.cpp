@@ -7,13 +7,12 @@ ACMovingPlatform_Trigger::ACMovingPlatform_Trigger()
 {
 	BoxComp = CreateDefaultSubobject<UBoxComponent>("BoxComp");
 	RootComponent = BoxComp;
-
 }
 
 void ACMovingPlatform_Trigger::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	OnActorBeginOverlap.AddDynamic(this, &ACMovingPlatform_Trigger::OnBeginOverlap);
 	OnActorEndOverlap.AddDynamic(this, &ACMovingPlatform_Trigger::OnEndOverlap);
 }

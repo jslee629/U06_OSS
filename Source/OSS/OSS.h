@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -17,8 +15,7 @@ static void LogOnScreen(UObject* WorldContext, FString Msg, FColor Color = FColo
 		return;
 	}
 
-	FString Prefix = World->IsNetMode(ENetMode::NM_Client) ? "[Client] " : "[Server] ";
-
+	FString Prefix = World->IsNetMode(NM_Client) ? "[Client] " : "[Server] ";
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, Duration, Color, Prefix + Msg);

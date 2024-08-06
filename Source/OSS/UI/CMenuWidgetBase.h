@@ -9,7 +9,7 @@ UCLASS()
 class OSS_API UCMenuWidgetBase : public UUserWidget
 {
 	GENERATED_BODY()
-
+	
 public:
 	void SetOwningInstance(ICMenuInterface* InOwningInstance);
 	void SetInputToUI();

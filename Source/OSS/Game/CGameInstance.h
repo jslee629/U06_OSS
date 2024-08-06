@@ -23,35 +23,39 @@ public:
 public:
 	UFUNCTION(Exec)
 	virtual void Host(FString InDesiredSessionName) override;
+
+	void CreateSession_Internal();
+
 	UFUNCTION(Exec)
 	virtual void Join(uint32 InIndex) override;
-
+	
 	virtual void OpenMainMenuLevel() override;
 	virtual void StartFindSession() override;
 
 	void StartSession();
 
-private:	
-	void CreateSession_Internal();
-
 public:
 	UFUNCTION(BlueprintCallable, Exec)
 	void LoadMainMenu();
+
 	UFUNCTION(BlueprintCallable, Exec)
 	void LoadInGameMenu();
 
 private:
 	void OnCreateSessionCompleted(FName InSessionName, bool bWasSuccessful);
 	void OnDestroySessionCompleted(FName InSessionName, bool bWasSuccessful);
-	void OnFindSessionsCompleted(bool bWasSuccessful);
-	void OnJoinSessionCompleted(FName InSessionName, EOnJoinSessionCompleteResult::Type OutResult);
-	void OnNetworkFailure(UWorld* World, UNetDriver* NetDrive, ENetworkFailure::Type FailureType, const FString& ErrorMessage);
+	void OnFindSessionCompleted(bool bWasSuccessful);
+	void OnJoinSessionCompleted(FName InSessionName, EOnJoinSessionCompleteResult::Type InResult);
+	void OnNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType, const FString& ErrorMessage);
 
 private:
 	TSubclassOf<UUserWidget> MainMenuWidgetClass;
 	UCMainMenuWidget* MainMenu;
+
 	TSubclassOf<UUserWidget> InGameMenuWidgetClass;
+
 	IOnlineSessionPtr SessionInterface;
 	TSharedPtr<FOnlineSessionSearch> SessionSearch;
+
 	FString DesiredSessionName;
 };

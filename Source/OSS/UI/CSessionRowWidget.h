@@ -16,25 +16,29 @@ class OSS_API UCSessionRowWidget : public UUserWidget
 public:
 	void Setup(UCMainMenuWidget* InParentWidget, uint32 InSelfIndex);
 
+public:
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* SessionName;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* HostUser;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* ConnectionFraction;
+
 private:
 	UFUNCTION()
 	void OnClicked();
 
 public:
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* SessionName; 
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* HostName; 
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* PlayerNumber; 
+	UPROPERTY(BlueprintReadOnly)
+	bool bEverClicked;
 
 private:
 	UPROPERTY(meta = (BindWidget))
 	UButton* RowButton;
 
-public:
-	UPROPERTY(BlueprintReadOnly)
-	bool bEverClicked;
+	
 
 private:
 	UCMainMenuWidget* ParentWidget;
