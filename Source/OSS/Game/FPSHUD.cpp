@@ -47,3 +47,11 @@ void AFPSHUD::BeginPlay()
 	}
 
 }
+
+void AFPSHUD::OnPlayerDead()
+{
+	if (PlayerStatusWidget)
+	{
+		PlayerStatusWidget->OnPlayerDead();
+	}
+}

@@ -9,4 +9,7 @@ class OSS_API UCPlayerStatusWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
+public:
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnPlayerDead();
 };

@@ -28,5 +28,8 @@ private:
 
 	UPROPERTY()
 	UCPlayerStatusWidget* PlayerStatusWidget;
+
+public:
+	void OnPlayerDead();
 };
 

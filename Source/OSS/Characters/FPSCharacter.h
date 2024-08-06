@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "../Game/CPlayerState.h"
 #include "FPSCharacter.generated.h"
 
 class UInputComponent;
@@ -113,5 +114,23 @@ private:
 public:
 	UFUNCTION(BlueprintCallable)
 	float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+private:
+	UFUNCTION(NetMulticast, Unreliable)
+	void NetMulticastRagdoll(FVector ImpactDirection);
+	UFUNCTION(Client, Unreliable)
+	void ClientRagdoll(FVector ImpactDirection);
+
+//Team Color
+public:
+	void SetTeamColor(ETeamType InTeam);
+
+private:
+	UPROPERTY(ReplicatedUsing = "OnRep_BodyColor")
+	FVector BodyColor;
+
+public:
+	UFUNCTION()
+	void OnRep_BodyColor();
 };
 
