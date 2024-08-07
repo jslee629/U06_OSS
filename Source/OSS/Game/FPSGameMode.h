@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "CPlayerState.h"
 #include "FPSGameMode.generated.h"
 
 class APlayerStart;
@@ -24,6 +25,8 @@ public:
 private:
 	UFUNCTION()
 	void RespawnPlayerElapsed(APlayerController* Controller);
+
+	void MoveToPlayerStart(APawn* InPawn, ETeamType InTeam);
 
 private:
 	TArray<APlayerStart*> RedTeamPlayerStarts;
